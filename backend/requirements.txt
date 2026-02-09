@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+python-dotenv
+python-multipart
+httpx
+pydantic-settings
+bcrypt
+python-jose[cryptography]
+google-generativeai
