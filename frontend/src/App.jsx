@@ -4,11 +4,14 @@ import Home from './pages/Home';
 import Reader from './pages/Reader';
 import Login from './pages/Login';
 import Editor from './pages/Editor';
+import PetChat from './components/PetChat';
 
 // 简单的路由守卫
 const ProtectedRoute = ({ children, requiredRole }) => {
   const isAuth = localStorage.getItem('user_role');
-  if (!isAuth) {
+  const user = localStorage.getItem('user_email');
+
+  if (!isAuth || !user) {
     return <Navigate to="/login" replace />;
   }
 
@@ -41,6 +44,7 @@ function App() {
             </ProtectedRoute>
           } />
         </Routes>
+        <PetChat />
       </div>
     </Router>
   );

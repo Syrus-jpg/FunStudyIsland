@@ -15,38 +15,54 @@ import {
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-// Robust Mock Data for offline preview
-const MOCK_CONTENT = {
-    speech: {
-        title: "言岛",
-        courses: [
-            { id: 1, title: "名人演讲精选", pages: [{ id: 101, title: "乔布斯斯坦福演讲记录", content: "# 乔布斯斯坦福演讲\n\nStay Hungry, Stay Foolish.\n\n这是乔布斯在2005年斯坦福大学毕业典礼上的演讲。\n\n### 核心要点\n- 串联起生命中的点滴\n- 关于爱与失去\n- 关于死亡" }] },
-            { id: 2, title: "场景英语", pages: [{ id: 102, title: "商务会议常用表达", content: "# 商务会议常用表达\n\n在本章中，我们将学习如何在地道的商务环境中表达观点。" }] }
-        ]
-    },
-    wealth: {
-        title: "财岛",
-        courses: [
-            { id: 3, title: "创业基础课", pages: [{ id: 103, title: "如何发现市场痛点", content: "# 市场痛点分析\n\n成功的创业往往始于一个深刻的行业洞察。" }] }
-        ]
-    }
-};
+import axios from 'axios';
+
+const API_BASE = 'http://localhost:8000/api/v1';
 
 const Reader = () => {
     const { islandCode } = useParams();
     const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [selectedPage, setSelectedPage] = useState(null);
-    const [islandData, setIslandData] = useState(null);
+    const [islandName, setIslandName] = useState("");
+    const [courses, setCourses] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Priority: use mock data if local server is not accessible
-        const data = MOCK_CONTENT[islandCode] || {
-            title: "未知岛屿",
-            courses: [{ title: "正在建设中", pages: [{ title: "暂无内容", content: "请期待后续内容更新..." }] }]
+        const fetchIslandContent = async () => {
+            setLoading(true);
+            try {
+                // 1. Get Island info to get the name
+                const islandsRes = await axios.get(`${API_BASE}/islands`);
+                const currentIsland = islandsRes.data.find(is => is.code === islandCode);
+                if (currentIsland) {
+                    setIslandName(currentIsland.name);
+                }
+
+                // 2. Get Courses for this island
+                const coursesRes = await axios.get(`${API_BASE}/islands/${islandCode}/courses`);
+                const coursesData = coursesRes.data;
+
+                // 3. For each course, fetch its pages
+                const coursesWithPages = await Promise.all(coursesData.map(async (course) => {
+                    const pagesRes = await axios.get(`${API_BASE}/courses/${course.id}/pages`);
+                    return { ...course, pages: pagesRes.data };
+                }));
+
+                setCourses(coursesWithPages);
+
+                // Default selection: first page of first course
+                if (coursesWithPages.length > 0 && coursesWithPages[0].pages.length > 0) {
+                    setSelectedPage(coursesWithPages[0].pages[0]);
+                }
+            } catch (err) {
+                console.error("Failed to fetch island content", err);
+            } finally {
+                setLoading(false);
+            }
         };
-        setIslandData(data);
-        setSelectedPage(data.courses[0].pages[0]);
+
+        fetchIslandContent();
     }, [islandCode]);
 
     return (
@@ -63,7 +79,7 @@ const Reader = () => {
                         <div className="h-12 flex items-center justify-between px-4">
                             <div className="flex items-center gap-2 hover:bg-[#efefef] p-1 rounded transition-colors cursor-pointer overflow-hidden">
                                 <div className="w-5 h-5 bg-[#edeeef] rounded flex items-center justify-center text-[10px] font-bold">趣</div>
-                                <span className="text-sm font-semibold truncate">趣学岛 / {islandData?.title}</span>
+                                <span className="text-sm font-semibold truncate">趣学岛 / {islandName}</span>
                             </div>
                             <button
                                 onClick={() => setSidebarOpen(false)}
@@ -86,7 +102,7 @@ const Reader = () => {
                                 目录结构
                             </div>
 
-                            {islandData?.courses.map(course => (
+                            {courses.map(course => (
                                 <div key={course.id} className="space-y-0.5">
                                     <div className="px-3 py-1.5 text-sm font-semibold flex items-center gap-2 opacity-50 truncate">
                                         <Bookmark className="w-3 h-3" />
@@ -106,16 +122,6 @@ const Reader = () => {
                             ))}
                         </div>
 
-                        {/* AI Assistant Mini Widget */}
-                        <div className="p-4 mt-auto border-t border-[#edeeef]">
-                            <div className="bg-white p-3 rounded-lg border border-[#edeeef] shadow-sm flex items-center gap-3">
-                                <div className="text-xl">🥚</div>
-                                <div className="text-[11px]">
-                                    <p className="font-bold">Gemini Assistant</p>
-                                    <p className="opacity-50">随时为您解答</p>
-                                </div>
-                            </div>
-                        </div>
                     </motion.aside>
                 )}
             </AnimatePresence>
@@ -149,15 +155,23 @@ const Reader = () => {
                 {/* Content Body */}
                 <div className="flex-1 overflow-y-auto w-full">
                     <div className="max-w-3xl mx-auto px-8 py-20">
-                        {selectedPage ? (
+                        {loading ? (
+                            <div className="h-screen flex items-center justify-center -mt-20">
+                                <motion.div
+                                    animate={{ rotate: 360 }}
+                                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                    className="w-8 h-8 border-2 border-[#edeeef] border-t-brand-primary rounded-full"
+                                />
+                            </div>
+                        ) : selectedPage ? (
                             <div className="animate-in fade-in duration-700">
                                 <div className="flex items-center gap-4 mb-4 opacity-40">
                                     <span className="text-4xl">📄</span>
                                 </div>
-                                <h1 className="text-4xl md:text-5xl font-bold mb-8 tracking-tight">
+                                <h1 className="text-4xl md:text-5xl font-bold mb-8 tracking-tight text-[#37352f]">
                                     {selectedPage.title}
                                 </h1>
-                                <div className="prose prose-notion select-text">
+                                <div className="prose prose-notion select-text max-w-none">
                                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                         {selectedPage.content}
                                     </ReactMarkdown>
@@ -166,22 +180,15 @@ const Reader = () => {
                         ) : (
                             <div className="h-full flex items-center justify-center opacity-20 flex-col gap-4">
                                 <div className="w-20 h-20 bg-gray-100 rounded-full animate-pulse"></div>
-                                <p className="font-medium tracking-widest text-sm uppercase">正在加载岛屿内容...</p>
+                                <p className="font-medium tracking-widest text-sm uppercase text-center">
+                                    该岛屿暂无课程内容<br />
+                                    <span className="text-[10px] mt-2 block">请在编辑器中添加新页面</span>
+                                </p>
                             </div>
                         )}
                     </div>
                 </div>
 
-                {/* Floating Action Button (Pet Chat) */}
-                {!selectedPage ? null : (
-                    <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        className="fixed bottom-8 right-8 w-14 h-14 bg-[#37352f] text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-brand-primary transition-colors cursor-pointer"
-                    >
-                        <MessageSquare className="w-6 h-6" />
-                    </motion.button>
-                )}
             </main>
         </div>
     );

@@ -37,3 +37,33 @@ def get_page_content(page_id: int, db: Session = Depends(get_db)):
     if not page:
         raise HTTPException(status_code=404, detail="Page not found")
     return page
+
+class PageUpdate(BaseModel):
+    title: str
+    content: str
+
+@router.put("/pages/{page_id}")
+def update_page(page_id: int, update: PageUpdate, db: Session = Depends(get_db)):
+    db_page = db.query(ContentPage).filter(ContentPage.id == page_id).first()
+    if not db_page:
+        raise HTTPException(status_code=404, detail="Page not found")
+    db_page.title = update.title
+    db_page.content = update.content
+    db.commit()
+    db.refresh(db_page)
+    return db_page
+
+@router.post("/courses/{course_id}/pages")
+def create_page(course_id: int, page: PageUpdate, db: Session = Depends(get_db)):
+    # 简单的逻辑：获取当前最大 order
+    max_order = db.query(ContentPage).filter(ContentPage.course_id == course_id).count()
+    new_page = ContentPage(
+        title=page.title,
+        content=page.content,
+        course_id=course_id,
+        order=max_order + 1
+    )
+    db.add(new_page)
+    db.commit()
+    db.refresh(new_page)
+    return new_page
