@@ -63,9 +63,6 @@ const PetChat = () => {
                     className={`w-16 h-16 bg-white rounded-2xl shadow-xl border border-[#edeeef] flex items-center justify-center transition-all duration-300 ${isOpen ? 'rotate-90' : ''}`}
                 >
                     <span className="text-3xl">{isOpen ? <X className="w-8 h-8 text-gray-400" /> : '🥚'}</span>
-                    {!isOpen && (
-                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 border-2 border-white rounded-full animate-pulse"></div>
-                    )}
                 </motion.button>
             </motion.div>
 
@@ -105,8 +102,8 @@ const PetChat = () => {
                                     className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                                 >
                                     <div className={`max-w-[80%] p-3.5 rounded-2xl text-sm leading-relaxed ${msg.role === 'user'
-                                            ? 'bg-[#37352f] text-white shadow-sm'
-                                            : 'bg-white border border-[#edeeef] text-[#37352f] shadow-sm'
+                                        ? 'bg-[#37352f] text-white shadow-sm'
+                                        : 'bg-white border border-[#edeeef] text-[#37352f] shadow-sm'
                                         }`}>
                                         {msg.content}
                                     </div>
