@@ -6,6 +6,8 @@ import Login from './pages/Login';
 import Editor from './pages/Editor';
 import PetChat from './components/PetChat';
 
+import SpiritView from './pages/SpiritView';
+
 // 简单的路由守卫
 const ProtectedRoute = ({ children, requiredRole }) => {
   const isAuth = localStorage.getItem('user_role');
@@ -31,6 +33,11 @@ function App() {
           <Route path="/" element={
             <ProtectedRoute>
               <Home />
+            </ProtectedRoute>
+          } />
+          <Route path="/island/spirit" element={
+            <ProtectedRoute>
+              <SpiritView />
             </ProtectedRoute>
           } />
           <Route path="/island/:islandCode" element={

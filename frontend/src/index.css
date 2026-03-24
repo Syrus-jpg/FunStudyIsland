@@ -22,50 +22,117 @@ body {
 
 /* Notion-like Prose Styling */
 .prose-notion {
-  line-height: 1.5;
-  font-size: 16px;
+  line-height: 1.6;
+  font-size: 17px;
+  color: #37352f;
+}
+
+.tiptap:focus {
+  outline: none;
+}
+
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #adb5bd;
+  pointer-events: none;
+  height: 0;
 }
 
 .prose-notion h1 {
-  font-size: 1.875em;
-  font-weight: 700;
-  margin-top: 2em;
-  margin-bottom: 0.25em;
+  font-size: 2.25em;
+  font-weight: 800;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  letter-spacing: -0.02em;
 }
 
 .prose-notion h2 {
   font-size: 1.5em;
-  font-weight: 600;
+  font-weight: 700;
   margin-top: 1.5em;
-  margin-bottom: 0.25em;
+  margin-bottom: 0.3em;
+  letter-spacing: -0.01em;
 }
 
 .prose-notion h3 {
   font-size: 1.25em;
-  font-weight: 600;
+  font-weight: 700;
   margin-top: 1.25em;
-  margin-bottom: 0.25em;
+  margin-bottom: 0.3em;
 }
 
 .prose-notion p {
-  margin-top: 0.5em;
-  margin-bottom: 0.5em;
+  margin: 0.5em 0;
 }
 
 .prose-notion ul {
   list-style-type: disc;
   padding-left: 1.5em;
-  margin-top: 0.5em;
+  margin: 0.75em 0;
+}
+
+.prose-notion ol {
+  list-style-type: decimal;
+  padding-left: 1.5em;
+  margin: 0.75em 0;
 }
 
 .prose-notion li {
-  margin-top: 0.25em;
+  margin: 0.25em 0;
+}
+
+.prose-notion mark {
+  background-color: #fef3c7;
+  padding: 0.1em 0.2em;
+  border-radius: 0.2em;
 }
 
 .prose-notion blockquote {
-  border-left: 3px solid #37352f;
-  padding-left: 0.875em;
+  border-left: 3px solid #edeeef;
+  padding-left: 1.25em;
   font-style: italic;
-  opacity: 0.8;
+  color: #787774;
   margin: 1.5em 0;
+}
+
+.prose-notion img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+  margin: 2rem 0;
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+/* Task List Styles */
+.prose-notion ul[data-type="taskList"] {
+  list-style: none;
+  padding: 0;
+}
+
+.prose-notion ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5em;
+  margin: 0.5em 0;
+}
+
+.prose-notion ul[data-type="taskList"] input[type="checkbox"] {
+  margin-top: 0.35em;
+  cursor: pointer;
+  accent-color: #37352f;
+}
+
+.prose-notion ul[data-type="taskList"] li[data-checked="true"]>div {
+  text-decoration: line-through;
+  opacity: 0.4;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
