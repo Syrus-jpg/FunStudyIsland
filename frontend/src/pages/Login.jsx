@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Lock, Loader2 } from 'lucide-react';
+import logoImg from '../assets/images/logo.png';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -41,7 +42,9 @@ const Login = () => {
                 className="max-w-md w-full bg-white rounded-2xl shadow-xl border border-[#edeeef] p-8"
             >
                 <div className="text-center mb-8">
-                    <div className="text-5xl mb-4 text-center">🏝️</div>
+                    <div className="flex justify-center mb-6">
+                        <img src={logoImg} alt="Logo" className="w-24 h-24 object-contain drop-shadow-md" />
+                    </div>
                     <h1 className="text-2xl font-bold text-[#37352f]">欢迎来到趣学岛</h1>
                     <p className="text-sm text-gray-500 mt-2 text-center uppercase tracking-widest">捣蛋计划 1.0 登陆</p>
                 </div>

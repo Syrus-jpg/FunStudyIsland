@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     ChevronRight,
+    ChevronLeft,
     Menu,
     FileText,
     Bookmark,
@@ -22,16 +23,50 @@ import {
     EyeOff,
     Eye,
     Play,
-    Loader2
+    Loader2,
+    AlignLeft,
+    BookMarked,
+    Copy
 } from 'lucide-react';
 import axios from 'axios';
 import ReactPlayer from 'react-player';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { MapPin } from 'lucide-react';
+import speechIsland from '../assets/images/speech_island.png';
+import wealthIsland from '../assets/images/wealth_island.png';
+import resilienceIsland from '../assets/images/resilience_island.png';
+import artIsland from '../assets/images/art_island.png';
+import wisdomIsland from '../assets/images/wisdom_island.png';
+import executionIsland from '../assets/images/execution_island.png';
+import socialIsland from '../assets/images/social_island.png';
+import spiritIsland from '../assets/images/spirit_island.png';
+import logoImg from '../assets/images/logo.png';
+import kaifazhongImg from '../assets/images/kaifazhong.png';
+
+const islandImages = {
+    speech: speechIsland,
+    wealth: wealthIsland,
+    resilience: resilienceIsland,
+    art: artIsland,
+    wisdom: wisdomIsland,
+    execution: executionIsland,
+    social: socialIsland,
+    spirit: spiritIsland
+};
 
 function cn(...inputs) {
     return twMerge(clsx(...inputs));
 }
+
+const getCardInfo = (page) => {
+    try {
+        const meta = JSON.parse(page.metadata_json || '{}');
+        return meta.card_info || {};
+    } catch (e) {
+        return {};
+    }
+};
 
 const API_BASE = 'http://localhost:8000/api/v1';
 
@@ -196,7 +231,21 @@ const Reader = () => {
     };
 
     const metadata = parseMetadata(selectedPage?.metadata_json);
-    const isLearningMode = !!selectedPage?.video_url;
+
+    // 叙岛：和灵岛一样，内容区别于其他岛屿，显示"正在开发中"
+    if (islandCode === 'social') {
+        return (
+            <div className="flex flex-col items-center justify-center h-screen bg-white text-[#37352f] font-sans">
+                <img src={kaifazhongImg} alt="开发中" className="w-72 h-72 object-contain mb-12 drop-shadow-sm" />
+                <button
+                    onClick={() => navigate('/')}
+                    className="mt-10 px-6 py-2.5 bg-[#37352f] text-white text-sm font-bold rounded-full hover:bg-black transition-colors active:scale-95"
+                >
+                    返回大地图
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div className="flex h-screen bg-white text-[#37352f] overflow-hidden font-sans">
@@ -226,12 +275,12 @@ const Reader = () => {
                         <div className="h-12 flex items-center justify-between px-4 shrink-0 transition-opacity">
                             <div
                                 onClick={handleGoHome}
-                                className="flex items-center gap-2 hover:bg-[#efefef] p-1 rounded transition-colors cursor-pointer overflow-hidden max-w-[200px]"
+                                className="flex items-center gap-2.5 hover:bg-[#efefef] py-1.5 px-2 -ml-1 rounded transition-colors cursor-pointer overflow-hidden w-full"
                             >
-                                <div className="w-5 h-5 bg-[#edeeef] rounded flex items-center justify-center text-[10px]">
-                                    {islandInfo?.icon || '🏝️'}
+                                <div className="w-8 h-8 flex items-center justify-center shrink-0 mix-blend-multiply">
+                                    <img src={islandImages[islandCode] || logoImg} alt="Logo" className="w-[150%] h-[150%] object-contain scale-110 drop-shadow-sm" />
                                 </div>
-                                <span className="text-sm font-semibold truncate leading-none pt-0.5">趣学岛 / {islandName}</span>
+                                <span className="text-[16px] font-black truncate leading-none pt-0.5 tracking-tight text-gray-800">{islandName}</span>
                             </div>
                             <button onClick={() => setSidebarOpen(false)} className="hover:bg-[#efefef] p-1 rounded opacity-60">
                                 <ChevronRight className="w-4 h-4 rotate-180" />
@@ -247,40 +296,22 @@ const Reader = () => {
                                 <span>返回大地图</span>
                             </button>
 
-                            <button
-                                onClick={handleGoHome}
-                                className={`w-full flex items-center gap-2 px-3 py-1.5 text-sm rounded transition-colors ${isIslandHome ? 'bg-[#efefef] font-bold text-black opacity-100' : 'hover:bg-[#efefef] opacity-50'}`}
-                            >
-                                <Menu className="w-4 h-4" />
-                                <span>岛屿概览</span>
-                            </button>
-
-                            <div className="pt-8 pb-2 px-3 text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center justify-between">
+                            <div className="pt-8 pb-3 px-3 text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center justify-between">
                                 <span>目录结构</span>
-                                {userRole === 'editor' && (
-                                    <button onClick={() => navigate('/editor')} className="hover:text-black transition-colors">
-                                        <Settings className="w-3 h-3" />
-                                    </button>
-                                )}
                             </div>
 
-                            {courses.map(course => (
-                                <div key={course.id} className="space-y-0.5 mb-4">
-                                    <div className="px-3 py-1.5 text-[10px] font-black flex items-center gap-2 opacity-30 uppercase tracking-tighter">
-                                        {course.title}
-                                    </div>
-                                    {(course.contents || course.pages || []).map(page => (
-                                        <button
-                                            key={page.id}
-                                            onClick={() => handlePageSelect(page)}
-                                            className={`w-full flex items-center gap-2 px-3 py-1.5 text-sm rounded transition-all ${selectedPage?.id === page.id ? 'bg-white shadow-sm font-bold border border-[#edeeef]' : 'hover:bg-[#efefef] opacity-60'}`}
-                                        >
-                                            <span className="w-4 text-center">{page.icon || '📄'}</span>
-                                            <span className="truncate">{page.title}</span>
-                                        </button>
-                                    ))}
-                                </div>
-                            ))}
+                            <div className="space-y-0.5 mb-8 pb-4">
+                                {courses.flatMap(course => course.contents || course.pages || []).map(page => (
+                                    <button
+                                        key={page.id}
+                                        onClick={() => handlePageSelect(page)}
+                                        className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded transition-all ${selectedPage?.id === page.id ? 'bg-white shadow-sm font-bold border border-[#edeeef] text-gray-900' : 'hover:bg-[#efefef] opacity-70 text-gray-600'}`}
+                                    >
+                                        <span className="w-4 text-center opacity-70">{page.icon || '📄'}</span>
+                                        <span className="truncate">{page.title}</span>
+                                    </button>
+                                ))}
+                            </div>
 
                             {favorites.length > 0 && (
                                 <div className="mt-8">
@@ -317,9 +348,6 @@ const Reader = () => {
                                 <Menu className="w-4 h-4" />
                             </button>
                         )}
-                        <span className="text-[11px] font-bold uppercase tracking-widest opacity-40">
-                            {isIslandHome ? 'Station / 首页' : `Reader / ${selectedPage?.title}`}
-                        </span>
                     </div>
                     <div className="flex items-center gap-4">
                         {selectedPage && (
@@ -345,170 +373,175 @@ const Reader = () => {
                             <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} className="w-5 h-5 border-2 border-[#edeeef] border-t-black rounded-full" />
                         </div>
                     ) : isIslandHome ? (
-                        <div className="animate-in fade-in duration-1000">
-                            <div className="h-64 w-full relative">
-                                <img src={islandInfo?.cover_image || "https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?auto=format&fit=crop&q=80&w=2000"} alt="Cover" className="w-full h-full object-cover" />
-                                <div className="absolute inset-0 bg-black/10" />
-                            </div>
-
-                            <div className="max-w-6xl mx-auto px-8 lg:px-24 pb-20">
-                                <div className="relative mt-8 mb-16">
-                                    <h1 className="text-5xl font-black text-[#37352f] tracking-tight mb-4">{islandName}</h1>
-                                    <p className="text-xl text-[#37352f]/40 font-medium max-w-2xl">{islandInfo?.subtitle || islandInfo?.description}</p>
-                                </div>
-
-                                <div className="space-y-20 pb-40">
-                                    {courses.map(course => (
-                                        <section key={course.id}>
-                                            <h3 className="text-xl font-bold text-[#37352f] mb-6 flex items-center gap-3">
-                                                {course.title}
-                                            </h3>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                                                {(course.contents || course.pages || []).map(page => (
-                                                    <motion.div
-                                                        key={page.id}
-                                                        whileHover={{ y: -4 }}
-                                                        onClick={() => handlePageSelect(page)}
-                                                        className="bg-white rounded-lg border border-[#edeeef] overflow-hidden shadow-sm hover:shadow-xl transition-all cursor-pointer group"
-                                                    >
-                                                        <div className="aspect-[16/9] bg-[#f7f7f5] relative overflow-hidden">
-                                                            {page.thumbnail_image ? (
-                                                                <img src={page.thumbnail_image} alt={page.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                                                            ) : (
-                                                                <div className="w-full h-full flex items-center justify-center text-4xl opacity-20">
-                                                                    {page.icon || '📄'}
-                                                                </div>
-                                                            )}
-                                                            <div className="absolute inset-0 bg-black/5" />
+                        <div className="animate-in fade-in duration-1000 h-full overflow-y-auto w-full">
+                            <div className="max-w-[1400px] mx-auto px-6 py-12 pb-32 w-full">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10 w-full">
+                                    {courses.flatMap(course => course.contents || course.pages || []).map(page => {
+                                        const cardInfo = getCardInfo(page);
+                                        return (
+                                            <motion.div
+                                                key={page.id}
+                                                whileHover={{ y: -4 }}
+                                                onClick={() => handlePageSelect(page)}
+                                                className="bg-white rounded-[1.25rem] border border-gray-100/80 overflow-hidden shadow-sm hover:shadow-xl transition-all cursor-pointer group flex flex-col h-full"
+                                            >
+                                                <div className="aspect-[16/9] bg-[#f7f7f5] relative overflow-hidden shrink-0">
+                                                    {page.thumbnail_image ? (
+                                                        <img src={page.thumbnail_image} alt={page.title} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-out" />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center text-4xl opacity-20">
+                                                            {page.icon || '📄'}
                                                         </div>
-                                                        <div className="px-3 py-2 border-t border-[#f7f7f5] flex items-center gap-2">
-                                                            <span className="text-sm">{page.icon || '📄'}</span>
-                                                            <span className="text-[13px] font-medium text-[#37352f] truncate">{page.title}</span>
+                                                    )}
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                    {cardInfo.status_label && (
+                                                        <div className="absolute bottom-2.5 right-2.5 bg-white/90 backdrop-blur-md text-gray-500 text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">
+                                                            {cardInfo.status_label}
                                                         </div>
-                                                    </motion.div>
-                                                ))}
-                                            </div>
-                                        </section>
-                                    ))}
+                                                    )}
+                                                </div>
+                                                <div className="p-4 flex flex-col flex-1 bg-white">
+                                                    {cardInfo.date_range && (
+                                                        <div className="text-[10.5px] text-gray-500/80 font-medium mb-1.5 tracking-tight">
+                                                            {cardInfo.date_range}
+                                                        </div>
+                                                    )}
+                                                    <div className="text-[14px] font-[800] text-gray-900 leading-snug line-clamp-2 min-h-[2.5rem] tracking-tight">
+                                                        {page.title}
+                                                    </div>
+                                                    
+                                                    <div className="mt-auto pt-5 flex items-center justify-between">
+                                                        <div className="flex flex-wrap gap-1.5">
+                                                            {(cardInfo.tags || []).map((tag, i) => (
+                                                                <span key={i} className="text-[10px] text-indigo-500 bg-indigo-50/80 px-2 py-[3px] rounded-md font-bold tracking-wide">
+                                                                    {tag}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                        {cardInfo.location && (
+                                                            <div className="flex items-center gap-1 text-[10px] text-gray-400 font-medium whitespace-nowrap">
+                                                                <MapPin className="w-3 h-3" />
+                                                                {cardInfo.location}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>
-                    ) : isLearningMode ? (
-                        /* Learning Mode Layout */
-                        <div className="h-full flex p-4 gap-4 bg-[#f7f7f5]">
-                            {/* Left: Video */}
-                            <div className="w-[32%] flex flex-col gap-4 overflow-y-auto pr-2 no-scrollbar">
-                                <div className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl bg-black border border-white/10 group">
-                                    <ReactPlayer
-                                        ref={playerRef}
-                                        url={selectedPage.video_url}
-                                        width="100%"
-                                        height="100%"
-                                        playing={playerState.playing}
-                                        onProgress={(p) => setPlayerState(prev => ({ ...prev, playedSeconds: p.playedSeconds }))}
-                                        onPlay={() => setPlayerState(prev => ({ ...prev, playing: true }))}
-                                        onPause={() => setPlayerState(prev => ({ ...prev, playing: false }))}
-                                        controls
-                                    />
+                    ) : selectedPage ? (
+                        /* Learning Mode Layout for ALL pages */
+                        <div className="absolute inset-0 z-[100] flex p-4 gap-4 bg-[#f3f4f6] font-sans">
+                            
+                            {/* Left Column (60%) */}
+                            <div className="w-[60%] flex flex-col gap-4 h-full">
+                                {/* Top Video Card */}
+                                <div className="bg-white rounded-[16px] border border-gray-200 overflow-hidden shadow-sm flex flex-col shrink-0">
+                                    <div className="px-5 py-4 flex items-center justify-between">
+                                        <button onClick={handleGoHome} className="flex items-center gap-2 hover:opacity-70 transition-opacity">
+                                            <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
+                                            <h2 className="text-[16px] font-bold tracking-tight text-gray-900">{selectedPage.title}</h2>
+                                        </button>
+                                        <div className="flex items-center gap-4 text-[12px] text-gray-500 font-medium">
+                                            <span>时长: {metadata.card_info?.duration || "1:50"}</span>
+                                            <span>难度: {metadata.card_info?.difficulty || "初级"}</span>
+                                        </div>
+                                    </div>
+                                    <div className="w-full aspect-video bg-black relative">
+                                        {selectedPage.video_url ? (
+                                            <ReactPlayer
+                                                ref={playerRef}
+                                                url={selectedPage.video_url}
+                                                width="100%"
+                                                height="100%"
+                                                playing={playerState.playing}
+                                                onProgress={(p) => setPlayerState(prev => ({ ...prev, playedSeconds: p.playedSeconds }))}
+                                                onPlay={() => setPlayerState(prev => ({ ...prev, playing: true }))}
+                                                onPause={() => setPlayerState(prev => ({ ...prev, playing: false }))}
+                                                controls
+                                            />
+                                        ) : (
+                                            <div className="absolute inset-0 flex items-center justify-center bg-gray-900 flex-col gap-3">
+                                                <Play className="w-10 h-10 text-gray-600" />
+                                                <span className="text-gray-500 text-sm font-bold tracking-widest">请在后台配置您的视频源 (Video URL)</span>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                                <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-                                    <h3 className="flex items-center gap-2 text-sm font-black mb-4 opacity-70">
-                                        <BookOpen className="w-4 h-4" /> 视频简介
-                                    </h3>
+                                {/* Bottom Description Card */}
+                                <div className="bg-white rounded-[16px] border border-gray-200 p-5 shadow-sm flex-1 overflow-y-auto min-h-0">
+                                    <div className="flex items-center gap-2 text-sm font-bold mb-3 text-gray-800">
+                                        <BookOpen className="w-4 h-4 text-gray-600" /> 视频简介
+                                    </div>
                                     <div
-                                        className="text-sm leading-relaxed opacity-60 prose prose-sm max-w-none"
-                                        dangerouslySetInnerHTML={{ __html: selectedPage.content }}
+                                        className="text-[13px] leading-relaxed text-gray-500 font-medium prose prose-sm max-w-none"
+                                        dangerouslySetInnerHTML={{ __html: selectedPage.content || '<p class="opacity-40 italic">暂无课程描述信息...</p>' }}
                                     />
                                 </div>
                             </div>
 
-                            {/* Center: Subtitles */}
-                            <div className="w-[38%] bg-white rounded-3xl flex flex-col shadow-sm border border-gray-100 overflow-hidden">
-                                <div className="p-4 flex items-center justify-between border-b border-gray-50">
-                                    <h3 className="text-sm font-black">动态字幕</h3>
+                            {/* Right Column (40%) */}
+                            <div className="w-[40%] bg-[#f9fafb] rounded-[16px] border border-gray-200 shadow-sm flex flex-col h-full relative overflow-hidden">
+                                {/* Header */}
+                                <div className="bg-white px-5 py-3.5 flex items-center justify-between border-b border-gray-200 z-10 shrink-0">
+                                    <h3 className="text-[14px] font-bold text-gray-900">动态字幕</h3>
                                     <div className="flex gap-2">
-                                        <button onClick={() => setHiddenTranslations(!hiddenTranslations)} className={cn("p-1.5 rounded-lg transition-all", !hiddenTranslations ? "bg-blue-50 text-blue-600" : "text-gray-300")}>
-                                            <Languages className="w-4 h-4" />
+                                        <button onClick={() => setHiddenTranslations(!hiddenTranslations)} className={cn("w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors shadow-sm", hiddenTranslations ? "opacity-40" : "")}>
+                                            <Languages className="w-4 h-4 text-gray-600" />
                                         </button>
-                                        <button className="p-1.5 text-gray-300 hover:text-black transition-colors">
-                                            <RefreshCcw className="w-4 h-4" />
+                                        <button className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors shadow-sm">
+                                            <RefreshCcw className="w-4 h-4 text-gray-600" />
+                                        </button>
+                                        <button className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors shadow-sm">
+                                            <AlignLeft className="w-4 h-4 text-gray-600" />
+                                        </button>
+                                        <button className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors shadow-sm">
+                                            <BookMarked className="w-4 h-4 text-gray-600" />
+                                        </button>
+                                        <button className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors shadow-sm">
+                                            <Copy className="w-4 h-4 text-gray-600" />
                                         </button>
                                     </div>
                                 </div>
-                                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                                {/* Scrollable Subtitles */}
+                                <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-24">
                                     {metadata.segments?.map((seg, idx) => (
                                         <div
                                             key={idx}
                                             onClick={() => handleSeek(seg.time)}
-                                            className="p-4 rounded-2xl hover:bg-[#f7f7f5] group transition-all cursor-pointer relative"
+                                            className="bg-white p-4 rounded-xl border border-gray-100 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:border-blue-200 cursor-pointer transition-colors group relative"
                                         >
-                                            <div className="text-[10px] font-bold text-gray-300 group-hover:text-amber-500 mb-1">{seg.time}</div>
-                                            <div className="text-[15px] font-bold text-[#37352f] leading-snug">
+                                            <div className="text-[11px] font-bold text-gray-400 mb-2">{seg.time}</div>
+                                            <div className="text-[14px] font-bold text-[#37352f] leading-relaxed mb-1.5">
                                                 {seg.text.split(new RegExp(`(${seg.highlight})`, 'gi')).map((part, i) =>
                                                     part.toLowerCase() === seg.highlight?.toLowerCase() ? (
-                                                        <span key={i} className="bg-emerald-50 text-emerald-700 px-1 rounded mx-0.5">{part}</span>
+                                                        <span key={i} className="text-[#15803d] border-b-2 border-[#86efac]">{part}</span>
                                                     ) : <span key={i}>{part}</span>
                                                 )}
                                             </div>
-                                            {!hiddenTranslations && <div className="text-xs text-gray-400 mt-1">{seg.translation}</div>}
-                                            <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all">
-                                                <Play className="w-3 h-3 fill-amber-500 text-amber-500" />
-                                            </div>
+                                            {!hiddenTranslations && <div className="text-[12px] text-gray-500 font-medium">{seg.translation}</div>}
                                         </div>
-                                    ))}
+                                    )) || (
+                                        <div className="text-center text-sm text-gray-400 mt-20">暂无动态字幕数据，可在编辑模式注入 JSON。</div>
+                                    )}
                                 </div>
-                            </div>
-
-                            {/* Right: Vocab */}
-                            <div className="w-[30%] bg-white rounded-3xl flex flex-col shadow-sm border border-gray-100 overflow-hidden">
-                                <div className="flex border-b border-gray-50">
-                                    <button onClick={() => setActiveTab('vocab')} className={cn("flex-1 py-4 text-xs font-black transition-all", activeTab === 'vocab' ? "text-blue-600 border-b-2 border-blue-600" : "opacity-30")}>
-                                        单词 ({metadata.vocab?.length || 0})
+                                {/* Floating Buttons */}
+                                <div className="absolute bottom-6 right-6 flex flex-col items-end gap-3 pointer-events-none">
+                                    <button className="pointer-events-auto bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-full font-bold shadow-sm hover:bg-gray-50 transition-all text-[13px] flex items-center gap-1.5">
+                                        <RefreshCcw className="w-3.5 h-3.5" />
+                                        自动
                                     </button>
-                                    <button onClick={() => setActiveTab('phrases')} className={cn("flex-1 py-4 text-xs font-black transition-all", activeTab === 'phrases' ? "text-blue-600 border-b-2 border-blue-600" : "opacity-30")}>
-                                        短语
+                                    <button className="pointer-events-auto bg-[#3b82f6] text-white px-5 py-2.5 rounded-full font-bold shadow-lg hover:bg-blue-600 transition-all text-[14px] flex items-center gap-1.5">
+                                        <Volume2 className="w-4 h-4" />
+                                        跟读模式
                                     </button>
-                                </div>
-                                <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                                    {metadata.vocab?.map((v, i) => (
-                                        <div key={i} className="p-5 rounded-3xl border border-gray-50 hover:bg-gray-50 transition-all">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <h4 className="text-lg font-black">{v.word}</h4>
-                                                <div className="flex gap-1">
-                                                    <span className="px-2 py-0.5 bg-emerald-50 text-emerald-500 rounded text-[10px] font-bold">认识</span>
-                                                </div>
-                                            </div>
-                                            <div className="text-xs text-gray-400 mb-3">{v.phonetic} • {v.meaning}</div>
-                                            <div className="bg-white p-3 rounded-xl border border-gray-100">
-                                                <div className="text-xs font-bold text-gray-700">"{v.example}"</div>
-                                                <div className="text-[10px] text-gray-400">"{v.example_cn}"</div>
-                                            </div>
-                                        </div>
-                                    ))}
                                 </div>
                             </div>
                         </div>
-                    ) : (
-                        <div className="animate-in fade-in duration-700 max-w-4xl mx-auto px-8 md:px-24 py-20 pb-40">
-                            <div className="mb-20">
-                                <div className="text-8xl mb-6">{selectedPage?.icon || '📄'}</div>
-                                <h1 className="text-6xl font-black text-[#37352f] tracking-tighter mb-4 leading-tight">{selectedPage?.title}</h1>
-                                {selectedPage?.description && <p className="text-xl text-gray-400 font-medium italic border-l-4 border-gray-100 pl-6">{selectedPage.description}</p>}
-                            </div>
-
-                            <div
-                                className="tiptap prose prose-notion max-w-none select-text"
-                                dangerouslySetInnerHTML={{ __html: selectedPage?.content }}
-                            />
-
-                            {userRole === 'student' && (
-                                <div className="mt-32 pt-8 border-t border-gray-100 text-center opacity-40">
-                                    <div className="text-[10px] font-black uppercase tracking-[0.3em] mb-2">© 2026 Quxuedao Platform</div>
-                                    <p className="text-[10px] italic">版权所有，禁止任何形式的转载或抓取</p>
-                                </div>
-                            )}
-                        </div>
-                    )}
+                    ) : null}
                 </div>
             </main>
         </div>

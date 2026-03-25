@@ -32,3 +32,15 @@ yarn-error.log*
 *.suo
 *.ntvs*
 *.njsproj
+
+# Python
+__pycache__
+*.pyc
+.venv
+venv
+
+# Database
+*.db
+
+# Gemini
+.gemini

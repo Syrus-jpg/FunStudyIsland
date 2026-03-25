@@ -38,8 +38,6 @@ const Home = () => {
                         <img src={logoImg} alt="Logo" className="w-5 h-5 object-contain" />
                         <span className="font-semibold text-sm">趣学岛 (Fun Learning Island)</span>
                     </div>
-                    <span className="text-gray-300">/</span>
-                    <div className="text-sm truncate opacity-60">岛屿主页</div>
                 </div>
                 <div className="flex items-center gap-3">
                     {userRole === 'editor' && (
