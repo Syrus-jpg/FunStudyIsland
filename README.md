@@ -1,26 +1,10 @@
-# 趣学岛 (Fun Study Island) - 捣蛋计划
+# 趣学岛 (Fun Study Island) 
 
 一个能让你用游戏方式打开并坚持下去的英语学习软件。
 
 ## 项目架构
-- **Backend (后端)**: FastAPI (Python) - 位于 `/backend`
-- **Frontend (前端)**: React + Vite + Tailwind CSS - 位于 `/frontend`
-
-## 快速开始
-
-### 后端运行
-```bash
-cd backend
-pip install -r requirements.txt
-python app/main.py
-```
-
-### 前端运行
-```bash
-cd frontend
-npm install
-npm run dev
-```
+- **Backend (后端)**: FastAPI (Python) 
+- **Frontend (前端)**: React + Vite + Tailwind CSS 
 
 ## 核心设计
 - **岛屿 UI**: 交互式 2D 地图，包含六大知识岛屿。
