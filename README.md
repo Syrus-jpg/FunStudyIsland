@@ -1,7 +1,5 @@
 # 趣学岛 (Fun Study Island) 
 
-一个能让你用游戏方式打开并坚持下去的英语学习软件。
-
 ## 项目架构
 - **Backend (后端)**: FastAPI (Python) 
 - **Frontend (前端)**: React + Vite + Tailwind CSS 
